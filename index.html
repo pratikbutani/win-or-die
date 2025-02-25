@@ -80,37 +80,6 @@
             margin: 5px;
             font-size: 16px;
         }
-        @keyframes jump {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-50px); }
-            100% { transform: translateY(0); }
-        }
-        @keyframes jumpToBasket {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-100px) translateY(-50px); }
-            75% { transform: translateX(-100px) translateY(-50px); }
-            100% { transform: translateX(0); }
-        }
-        @keyframes robotJumpToBasket {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(100px) translateY(-50px); }
-            75% { transform: translateX(100px) translateY(-50px); }
-            100% { transform: translateX(0); }
-        }
-        @keyframes bounce {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        .jumping {
-            animation: jump 0.5s infinite;
-        }
-        .player-jump {
-            animation: jumpToBasket 1s;
-        }
-        .robot-jump {
-            animation: robotJumpToBasket 1s;
-        }
     </style>
 </head>
 <body>
@@ -132,33 +101,46 @@
         </div>
         <div class="character" id="player">
             <span>🧑</span>
-            <div id="player-name">Pratik</div>
+            <div id="player-name"></div>
         </div>
     </div>
 
     <script>
-        let ballsLeft, maxPick, cycle, gameActive = false;
+        let ballsLeft, maxPick, cycle, gameActive = false, playerName = '';
 
         function startGame() {
+            playerName = prompt("Enter your name:", "Player") || "Player"; // Ask for name, default to "Player"
             ballsLeft = parseInt(document.getElementById('total-balls').value);
             maxPick = parseInt(document.getElementById('max-pick').value);
             cycle = maxPick + 1;
             gameActive = true;
 
+            const gameContainer = document.getElementById('game');
+            const playerDiv = document.getElementById('player');
+            const playerNameDiv = document.getElementById('player-name');
+
             document.getElementById('setup').style.display = 'none';
-            document.getElementById('game').style.display = 'flex';
+            if (gameContainer) gameContainer.style.display = 'flex';
+            if (playerNameDiv) playerNameDiv.textContent = playerName;
+
             updateBallsLeft();
-            document.getElementById('message').textContent = 'Your turn, Pratik!';
+            const message = document.getElementById('message');
+            if (message) message.textContent = `Your turn, ${playerName}!`;
             createPlayerControls();
-            document.getElementById('robot').classList.add('jumping');
+
+            const robot = document.getElementById('robot');
+            if (robot) robot.classList.add('jumping');
+            console.log('Game started. Player:', playerName, ' Balls:', ballsLeft);
         }
 
         function updateBallsLeft() {
-            document.getElementById('balls-left').textContent = `${ballsLeft} balls left`;
+            const ballsLeftDiv = document.getElementById('balls-left');
+            if (ballsLeftDiv) ballsLeftDiv.textContent = `${ballsLeft} balls left`;
         }
 
         function createPlayerControls() {
             const controls = document.getElementById('player-controls');
+            if (!controls) return;
             controls.innerHTML = '';
             for (let i = 1; i <= Math.min(maxPick, ballsLeft); i++) {
                 const btn = document.createElement('button');
@@ -168,60 +150,114 @@
             }
         }
 
-        function playerMove(num) {
+        async function playerMove(num) {
             if (!gameActive || num > ballsLeft) return;
 
             ballsLeft -= num;
-            document.getElementById('player').classList.remove('jumping');
-            document.getElementById('player').classList.add('player-jump');
-            document.getElementById('basket').classList.add('bounce');
-            document.getElementById('message').textContent = `Pratik picked ${num} balls!`;
-            updateBallsLeft();
-            document.getElementById('player-controls').innerHTML = ''; // Disable buttons during animation
+            const player = document.getElementById('player');
+            const basket = document.getElementById('basket');
+            const message = document.getElementById('message');
+            const controls = document.getElementById('player-controls');
 
-            setTimeout(() => {
-                document.getElementById('player').classList.remove('player-jump');
-                document.getElementById('basket').classList.remove('bounce');
-                if (checkWin()) return; // Stop if game ends
-                robotMove();
-            }, 1000);
+            if (player) player.classList.remove('jumping');
+            if (player) player.classList.add('player-jump');
+            if (basket) basket.classList.add('bounce');
+            if (message) message.textContent = `${playerName} picked ${num} balls!`;
+            updateBallsLeft();
+            if (controls) controls.innerHTML = '';
+
+            await wait(1000);
+            if (player) player.classList.remove('player-jump');
+            if (basket) basket.classList.remove('bounce');
+
+            if (!checkWin()) {
+                await robotMove();
+            }
         }
 
-        function robotMove() {
+        async function robotMove() {
             if (!gameActive) return;
 
-            document.getElementById('robot').classList.remove('jumping');
-            document.getElementById('player').classList.add('jumping');
+            const robot = document.getElementById('robot');
+            const player = document.getElementById('player');
+            const basket = document.getElementById('basket');
+            const message = document.getElementById('message');
+
+            if (robot) robot.classList.remove('jumping');
+            if (player) player.classList.add('jumping');
             const remainder = ballsLeft % cycle;
             const robotPick = remainder === 0 ? 1 : remainder;
             ballsLeft -= robotPick;
 
-            document.getElementById('robot').classList.add('robot-jump');
-            document.getElementById('basket').classList.add('bounce');
-            document.getElementById('message').textContent = `Robot picked ${robotPick} balls!`;
+            if (robot) robot.classList.add('robot-jump');
+            if (basket) basket.classList.add('bounce');
+            if (message) message.textContent = `Robot picked ${robotPick} balls!`;
             updateBallsLeft();
 
-            setTimeout(() => {
-                document.getElementById('robot').classList.remove('robot-jump');
-                document.getElementById('basket').classList.remove('bounce');
-                if (checkWin()) return; // Stop if game ends
-                document.getElementById('message').textContent = 'Your turn, Pratik!';
+            await wait(1000);
+            if (robot) robot.classList.remove('robot-jump');
+            if (basket) basket.classList.remove('bounce');
+
+            if (!checkWin()) {
+                if (message) message.textContent = `Your turn, ${playerName}!`;
                 createPlayerControls();
-            }, 1000);
+            }
         }
 
         function checkWin() {
             if (ballsLeft <= 0) {
                 gameActive = false;
-                const winner = ballsLeft === 0 ? 'Pratik' : 'Robot';
-                document.getElementById('message').textContent = `${winner} wins!`;
-                document.getElementById('player-controls').innerHTML = '';
-                document.getElementById('player').classList.remove('jumping');
-                document.getElementById('robot').classList.remove('jumping');
+                const message = document.getElementById('message');
+                const controls = document.getElementById('player-controls');
+                const player = document.getElementById('player');
+                const robot = document.getElementById('robot');
+
+                const winner = ballsLeft === 0 ? playerName : 'Robot';
+                if (message) message.textContent = `${winner} wins!`;
+                if (controls) controls.innerHTML = '';
+                if (player) player.classList.remove('jumping');
+                if (robot) robot.classList.remove('jumping');
                 return true;
             }
             return false;
         }
+
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Define keyframes dynamically to avoid missing CSS errors
+        const styleSheet = document.styleSheets[0];
+        styleSheet.insertRule(`
+            @keyframes jump {
+                0% { transform: translateY(0); }
+                50% { transform: translateY(-50px); }
+                100% { transform: translateY(0); }
+            }
+        `, styleSheet.cssRules.length);
+        styleSheet.insertRule(`
+            @keyframes jumpToBasket {
+                0% { transform: translateX(0); }
+                25% { transform: translateX(-100px) translateY(-50px); }
+                75% { transform: translateX(-100px) translateY(-50px); }
+                100% { transform: translateX(0); }
+            }
+        `, styleSheet.cssRules.length);
+        styleSheet.insertRule(`
+            @keyframes robotJumpToBasket {
+                0% { transform: translateX(0); }
+                25% { transform: translateX(100px) translateY(-50px); }
+                75% { transform: translateX(100px) translateY(-50px); }
+                100% { transform: translateX(0); }
+            }
+        `, styleSheet.cssRules.length);
+        styleSheet.insertRule(`
+            @keyframes bounce {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        `, styleSheet.cssRules.length);
     </script>
 </body>
 </html>
