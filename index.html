@@ -3,261 +3,1492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basket Ball Grab</title>
+    <title>Win or Die Game</title>
     <style>
         body {
+            font-family: 'Arial', sans-serif;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #87CEEB, #FFD700);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            padding: 0;
+            background-color: #8ecae6;
+            color: #333;
+            overflow-x: hidden;
         }
+
+        h1 {
+            text-align: center;
+            color: #003049;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
         .game-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 90%;
             max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .character {
-            text-align: center;
-            width: 150px;
-        }
-        .character span {
-            font-size: 60px;
-            display: block;
-        }
-        .basket {
-            text-align: center;
-        }
-        .basket img {
-            width: 200px;
-            transition: transform 0.2s;
-        }
-        .basket.bounce {
-            animation: bounce 0.5s;
-        }
-        #balls-left {
+
+        // Add this CSS to your style section
+        .winner {
             font-size: 24px;
-            margin-top: 10px;
             font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            color: #003049;
+            background-color: #ffdd00;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: celebrate 0.5s infinite alternate;
+            z-index: 100;
+            position: relative;
         }
-        #message {
-            font-size: 20px;
-            margin-top: 20px;
-            color: #fff;
-            text-shadow: 1px 1px 2px #000;
+        .setup-screen, .game-screen {
+            transition: opacity 0.5s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
-        .controls {
-            margin-top: 20px;
+
+        .hidden {
+            display: none;
         }
-        button {
-            padding: 10px 20px;
+
+        .setup-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #003049;
+        }
+
+        .game-world {
+            position: relative;
+            height: 500px;
+            background-image: url('https://cdnjs.cloudflare.com/ajax/libs/simple-icons/3.0.1/simple-icons.svg');
+            background-size: cover;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 65%;
+            background: linear-gradient(to bottom, #4cc9f0, #8ecae6);
+            z-index: 1;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background: linear-gradient(to bottom, #588157, #3a5a40);
+            z-index: 1;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(#ffba08, #fb8500);
+            border-radius: 50%;
+            box-shadow: 0 0 30px #fb8500;
+            z-index: 2;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            z-index: 2;
+            opacity: 0.9;
+            filter: blur(3px);
+        }
+
+        .cloud-1 {
+            top: 60px;
+            left: 100px;
+            width: 150px;
+            height: 50px;
+            animation: floatCloud 30s infinite linear;
+        }
+
+        .cloud-2 {
+            top: 120px;
+            right: 150px;
+            width: 100px;
+            height: 40px;
+            animation: floatCloud 35s 5s infinite linear;
+        }
+
+        @keyframes floatCloud {
+            from { transform: translateX(-150%); }
+            to { transform: translateX(1000px); }
+        }
+
+        .character {
+            position: absolute;
+            bottom: 35%;
+            width: 120px;
+            height: 200px;
+            z-index: 5;
+            transition: transform 0.5s ease, bottom 0.5s ease;
+        }
+
+        .robot {
+            left: 50px;
+            transform-origin: bottom center;
+        }
+
+        .player {
+            right: 50px;
+            transform-origin: bottom center;
+        }
+
+        .character-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .robot .head {
+            position: absolute;
+            top: 0;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #90e0ef;
+            border-radius: 10px;
+            border: 3px solid #0077b6;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .robot .eye {
+            position: absolute;
+            top: 15px;
+            width: 15px;
+            height: 15px;
+            background-color: #003049;
+            border-radius: 50%;
+            animation: blink 4s infinite;
+        }
+
+        .robot .eye.left {
+            left: 15px;
+        }
+
+        .robot .eye.right {
+            right: 15px;
+        }
+
+        @keyframes blink {
+            0%, 95%, 98% { height: 15px; }
+            96%, 97% { height: 2px; }
+        }
+
+        .robot .mouth {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            width: 20px;
+            height: 5px;
+            background-color: #003049;
+        }
+
+        .robot .body {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            width: 80px;
+            height: 100px;
+            background-color: #0077b6;
+            border-radius: 10px;
+            border: 3px solid #023e8a;
+        }
+
+        .robot .arm {
+            position: absolute;
+            top: 80px;
+            width: 20px;
+            height: 80px;
+            background-color: #90e0ef;
+            border-radius: 10px;
+            border: 3px solid #0077b6;
+        }
+
+        .robot .arm.left {
+            left: 0;
+            transform-origin: top center;
+            transform: rotate(15deg);
+        }
+
+        .robot .arm.right {
+            right: 0;
+            transform-origin: top center;
+            transform: rotate(-15deg);
+        }
+
+        .robot .leg {
+            position: absolute;
+            top: 180px;
+            width: 25px;
+            height: 70px;
+            background-color: #0077b6;
+            border-radius: 10px;
+            border: 3px solid #023e8a;
+        }
+
+        .robot .leg.left {
+            left: 25px;
+        }
+
+        .robot .leg.right {
+            right: 25px;
+        }
+
+        .player .head {
+            position: absolute;
+            top: 0;
+            left: 30px;
+            width: 60px;
+            height: 70px;
+            background-color: #ffafcc;
+            border-radius: 50% 50% 45% 45%;
+            border: 3px solid #9e2a2b;
+        }
+
+        .player .eye {
+            position: absolute;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            background-color: #240046;
+            border-radius: 50%;
+            animation: blink 3s infinite;
+        }
+
+        .player .eye.left {
+            left: 17px;
+        }
+
+        .player .eye.right {
+            right: 17px;
+        }
+
+        .player .mouth {
+            position: absolute;
+            bottom: 15px;
+            left: 22px;
+            width: 16px;
+            height: 8px;
+            background-color: #240046;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .player .body {
+            position: absolute;
+            top: 80px;
+            left: 25px;
+            width: 70px;
+            height: 90px;
+            background-color: #ff9770;
+            border-radius: 15px 15px 25px 25px;
+            border: 3px solid #9e2a2b;
+        }
+
+        .player .arm {
+            position: absolute;
+            top: 90px;
+            width: 20px;
+            height: 70px;
+            background-color: #ffafcc;
+            border-radius: 10px;
+            border: 3px solid #9e2a2b;
+        }
+
+        .player .arm.left {
+            left: 5px;
+            transform-origin: top center;
+            transform: rotate(15deg);
+        }
+
+        .player .arm.right {
+            right: 5px;
+            transform-origin: top center;
+            transform: rotate(-15deg);
+        }
+
+        .player .leg {
+            position: absolute;
+            top: 180px;
+            width: 25px;
+            height: 70px;
+            background-color: #ff9770;
+            border-radius: 10px;
+            border: 3px solid #9e2a2b;
+        }
+
+        .player .leg.left {
+            left: 25px;
+        }
+
+        .player .leg.right {
+            right: 25px;
+        }
+
+        .basket {
+            position: absolute;
+            left: 50%;
+            bottom: 35%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 120px;
+            background: linear-gradient(to bottom, #774936, #5c3c26);
+            border-radius: 0 0 100px 100px;
+            z-index: 3;
+            border-top: 4px solid #854b30;
+            overflow: visible;
+            perspective: 500px;
+        }
+
+        .basket::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            right: 10px;
+            height: 20px;
+            background: linear-gradient(to right, transparent 0%, #854b30 5%, #854b30 95%, transparent 100%);
+            border-radius: 50% 50% 0 0;
+        }
+
+        .basket-inner {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: 0;
+            height: 90%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 0 0 90px 90px;
+        }
+
+        .balls-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start;
+            z-index: 4;
+            transform-style: preserve-3d;
+            transform: rotateX(45deg);
+            padding-top: 20px;
+        }
+
+        .ball {
+            width: 30px;
+            height: 30px;
             margin: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #32CD32;
+            border-radius: 50%;
+            background: radial-gradient(at 30% 30%, #caf0f8, #90e0ef 60%, #00b4d8);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            transform-style: preserve-3d;
+            transform: translateZ(calc(var(--depth) * 5px));
+        }
+
+        .ball::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-100px) scale(1.05); }
+        }
+
+        @keyframes pickBall {
+            0% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-150px) translateX(calc(var(--direction) * 100px)); }
+            50% { transform: translateY(-80px) translateX(calc(var(--direction) * 200px)); }
+            75% { transform: translateY(-40px) translateX(calc(var(--direction) * 100px)); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .active-turn {
+            animation: jump 1s infinite;
+        }
+
+        .taking-balls {
+            --direction: 0;
+            animation: pickBall 1.5s forwards;
+        }
+
+        .robot.taking-balls {
+            --direction: 1;
+        }
+
+        .player.taking-balls {
+            --direction: -1;
+        }
+
+        .flying-ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(at 30% 30%, #caf0f8, #90e0ef 60%, #00b4d8);
+            z-index: 10;
+            transition: all 1s ease;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .flying-ball::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+        }
+
+        .game-ui {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .selection-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .ball-select {
+            background-color: #023e8a;
+            color: white;
             border: none;
             border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ball-select:hover {
+            background-color: #0077b6;
+            transform: scale(1.1);
+        }
+
+        .ball-select.selected {
+            background-color: #ffb703;
+            color: #023047;
+            font-weight: bold;
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(255, 183, 3, 0.8);
+        }
+
+        .ball-select:disabled {
+            background-color: #c5c5c5;
+            color: #777;
+            cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
+        }
+
+        button {
+            background-color: #023e8a;
             color: white;
-        }
-        button:hover {
-            background-color: #228B22;
-        }
-        #setup {
-            position: absolute;
-            top: 20px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-        }
-        input {
-            padding: 5px;
-            margin: 5px;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
         }
+
+        button:hover {
+            background-color: #0077b6;
+        }
+
+        button:disabled {
+            background-color: #c5c5c5;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .start-button {
+            background-color: #38b000;
+            font-size: 18px;
+            padding: 12px 30px;
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            background-color: #4c9a00;
+        }
+
+        input, select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .status {
+            grid-column: span 2;
+            padding: 15px;
+            background-color: #e6f4ff;
+            border-radius: 5px;
+            text-align: center;
+            min-height: 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .player-turn {
+            background-color: #ffadad;
+            border-left: 5px solid #e5383b;
+        }
+
+        .robot-turn {
+            background-color: #a0c4ff;
+            border-left: 5px solid #4361ee;
+        }
+
+        .winner {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            color: #003049;
+            background-color: #ffdd00;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: celebrate 0.5s infinite alternate;
+        }
+
+        @keyframes celebrate {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .history {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .history p {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .history p:nth-child(odd) {
+            background-color: #f5f5f5;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .player-info {
+            font-weight: bold;
+            color: #e5383b;
+        }
+
+        .robot-info {
+            font-weight: bold;
+            color: #4361ee;
+        }
+
+        .total-count {
+            color: #003049;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .game-world {
+                height: 400px;
+            }
+
+            .character {
+                transform: scale(0.8);
+            }
+
+            .robot {
+                left: 20px;
+            }
+
+            .player {
+                right: 20px;
+            }
+
+            .basket {
+                width: 160px;
+                height: 100px;
+            }
+
+            .setup-form {
+                grid-template-columns: 1fr;
+            }
+
+            .game-ui {
+                grid-template-columns: 1fr;
+            }
+
+            .status {
+                grid-column: span 1;
+            }
+        }
+
+        <!-- Add this CSS to your style section -->
+        .how-to-play-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        /* Add new class for active state */
+        .how-to-play-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #023e8a;
+            padding: 5px;
+            margin: 0;
+        }
+
+        .modal-title {
+            color: #023e8a;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8ecae6;
+        }
+
+        .rule-section {
+            margin: 15px 0;
+        }
+
+        .rule-title {
+            font-weight: bold;
+            color: #003049;
+            margin-bottom: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+
+        .show-rules-btn {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .show-rules-btn:hover {
+            background-color: #023e8a;
+        }
+
+        /* Add this to the game-container to create space for the button */
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
     </style>
 </head>
 <body>
-    <div id="setup">
-        <label>Total Balls: <input type="number" id="total-balls" value="20" min="1"></label><br>
-        <label>Max Pick: <input type="number" id="max-pick" value="5" min="1"></label><br>
-        <button onclick="startGame()">Start Game</button>
-    </div>
-    <div class="game-container" id="game" style="display: none;">
-        <div class="character" id="robot">
-            <span>🤖</span>
-            <div>Robot</div>
+<h1>Win or Die Game</h1>
+
+<div class="game-container">
+
+    <div class="setup-screen">
+        <h2>Game Setup</h2>
+        <div class="setup-form">
+            <div class="form-group">
+                <label for="player-name">Your Name:</label>
+                <input type="text" id="player-name" placeholder="Enter your name" value="Player">
+            </div>
+            <div class="form-group">
+                <label for="total-balls">Number of Balls:</label>
+                <input type="number" id="total-balls" min="5" max="100" value="20">
+            </div>
+            <div class="form-group">
+                <label for="max-balls-per-turn">Max Balls Per Turn:</label>
+                <input type="number" id="max-balls-per-turn" min="1" max="20" value="5">
+            </div>
+            <div class="form-group">
+                <label for="difficulty">Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="who-starts">Who starts first:</label>
+                <select id="who-starts">
+                    <option value="player">Player</option>
+                    <option value="robot">Robot</option>
+                    <option value="random" selected>Random</option>
+                </select>
+            </div>
         </div>
-        <div class="basket">
-            <img src="https://img.icons8.com/color/200/000000/basketball.png" alt="Basket">
-            <div id="balls-left"></div>
-            <div id="message"></div>
-            <div class="controls" id="player-controls"></div>
-        </div>
-        <div class="character" id="player">
-            <span>🧑</span>
-            <div id="player-name"></div>
+        <!-- Add this HTML at the end of your body, right before the closing </body> tag -->
+        <button id="start-game" class="start-button">Start Game</button>
+
+        <br/><br/>
+        <div class="how-to-play-modal" id="how-to-play-modal">
+            <div class="modal-content">
+                <h2 class="modal-title">How to Play "Win or Die" Game</h2>
+
+                <div class="rule-section">
+                    <div class="rule-title">Objective:</div>
+                    <p>Take the last ball from the basket to win the game!</p>
+                </div>
+
+                <div class="rule-section">
+                    <div class="rule-title">Game Rules:</div>
+                    <ul>
+                        <li>Players take turns removing balls from the basket.</li>
+                        <li>On your turn, you must take at least 1 ball.</li>
+                        <li>You can take up to the maximum number of balls allowed per turn (default: 5).</li>
+                        <li>The player who takes the last ball wins the game.</li>
+                    </ul>
+                </div>
+
+                <div class="rule-section">
+                    <div class="rule-title">Game Setup:</div>
+                    <ul>
+                        <li>Enter your name</li>
+                        <li>Set the total number of balls (5-100)</li>
+                        <li>Set the maximum balls allowed per turn (1-20)</li>
+                        <li>Choose the difficulty level</li>
+                        <li>Select who starts first</li>
+                    </ul>
+                </div>
+
+                <div class="rule-section">
+                    <div class="rule-title">Difficulty Levels:</div>
+                    <ul>
+                        <li><strong>Easy:</strong> Robot makes more random moves and misses opportunities.</li>
+                        <li><strong>Medium:</strong> Robot plays strategically most of the time.</li>
+                        <li><strong>Hard:</strong> Robot plays almost perfectly, using optimal strategy.</li>
+                    </ul>
+                </div>
+
+                <div class="rule-section">
+                    <div class="rule-title">Strategy Tip:</div>
+                    <p>Try to leave your opponent with a multiple of (maximum balls per turn + 1).</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        let ballsLeft, maxPick, cycle, gameActive = false, playerName = '';
+    <!-- Game screen will be added in the next part -->
+    <div class="game-screen hidden">
+        
+        <div class="game-world">
+            <div class="sky"></div>
+            <div class="ground"></div>
+            <div class="sun"></div>
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
 
-        function startGame() {
-            playerName = prompt("Enter your name:", "Player") || "Player"; // Ask for name, default to "Player"
-            ballsLeft = parseInt(document.getElementById('total-balls').value);
-            maxPick = parseInt(document.getElementById('max-pick').value);
-            cycle = maxPick + 1;
+            <!-- Robot Character -->
+            <div class="character robot" id="robot-character">
+                <div class="character-body">
+                    <div class="head">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                    <div class="body"></div>
+                    <div class="arm left"></div>
+                    <div class="arm right"></div>
+                    <div class="leg left"></div>
+                    <div class="leg right"></div>
+                </div>
+            </div>
+
+            <!-- Player Character -->
+            <div class="character player" id="player-character">
+                <div class="character-body">
+                    <div class="head">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="mouth"></div>
+                    </div>
+                    <div class="body"></div>
+                    <div class="arm left"></div>
+                    <div class="arm right"></div>
+                    <div class="leg left"></div>
+                    <div class="leg right"></div>
+                </div>
+            </div>
+
+            <!-- Basket -->
+            <div class="basket">
+                <div class="basket-inner">
+                    <div class="balls-container" id="balls-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <br/>
+        <div class="game-info">
+            <div class="robot-info">Robot: AI Robo</div>
+            <div class="player-info">Player: <span id="player-name-display">Player</span></div>
+        </div>
+
+        <div class="total-count" id="balls-count">Balls remaining: 20</div>
+
+        <div class="game-ui">
+            <div class="status" id="game-status">Game is starting...</div>
+
+            <div class="controls">
+                <div>Select balls:</div>
+                <div class="selection-buttons" id="selection-buttons">
+                    <!-- Will be filled dynamically -->
+                </div>
+                <button id="take-balls" disabled>Pick Balls</button>
+            </div>
+            <div class="history" id="game-history">
+                <h3>Game History</h3>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <button id="reset-game">Start New Game</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Game variables
+        let playerName = '';
+        let totalBalls = 20;
+        let remainingBalls = 20;
+        let maxBallsPerTurn = 5;
+        let isPlayerTurn = true;
+        let selectedCount = 0;
+        let gameActive = false;
+        let difficulty = 'medium';
+        let animationInProgress = false;
+
+        // DOM elements
+        const setupScreen = document.querySelector('.setup-screen');
+        const gameScreen = document.querySelector('.game-screen');
+        const startGameButton = document.getElementById('start-game');
+        const resetGameButton = document.getElementById('reset-game');
+        const ballsContainer = document.getElementById('balls-container');
+        const gameStatus = document.getElementById('game-status');
+        const selectionButtons = document.getElementById('selection-buttons');
+        const takeBallsButton = document.getElementById('take-balls');
+        const playerNameInput = document.getElementById('player-name');
+        const totalBallsInput = document.getElementById('total-balls');
+        const maxBallsPerTurnInput = document.getElementById('max-balls-per-turn');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const difficultySelect = document.getElementById('difficulty');
+        const whoStartsSelect = document.getElementById('who-starts');
+        const gameHistoryContainer = document.getElementById('game-history');
+        const ballsCount = document.getElementById('balls-count');
+        const robotCharacter = document.getElementById('robot-character');
+        const playerCharacter = document.getElementById('player-character');
+
+        // Event listeners
+        startGameButton.addEventListener('click', initializeGame);
+        resetGameButton.addEventListener('click', resetGame);
+        takeBallsButton.addEventListener('click', handlePlayerMove);
+
+        const modalCloseButton = document.getElementById('modal-close');
+        const howToPlayModal = document.getElementById('how-to-play-modal');
+
+        modalCloseButton.addEventListener('click', toggleModal);
+
+        function toggleModal() {
+            howToPlayModal.classList.toggle('active');
+        }
+
+        // Initialize game
+        function initializeGame() {
+            playerName = playerNameInput.value.trim() || 'Player';
+            playerNameDisplay.textContent = playerName;
+
+            totalBalls = parseInt(totalBallsInput.value);
+            if (isNaN(totalBalls) || totalBalls < 5) totalBalls = 5;
+            if (totalBalls > 100) totalBalls = 100;
+
+            maxBallsPerTurn = parseInt(maxBallsPerTurnInput.value);
+            if (isNaN(maxBallsPerTurn) || maxBallsPerTurn < 1) maxBallsPerTurn = 1;
+            if (maxBallsPerTurn > 20) maxBallsPerTurn = 20;
+
+            remainingBalls = totalBalls;
+            difficulty = difficultySelect.value;
+
+            // Create selection buttons
+            selectionButtons.innerHTML = '';
+            for (let i = 1; i <= maxBallsPerTurn; i++) {
+                const button = document.createElement('button');
+                button.classList.add('ball-select');
+                button.dataset.count = i;
+                button.textContent = i;
+                button.addEventListener('click', function() {
+                    selectBallCount(parseInt(this.dataset.count));
+                });
+                selectionButtons.appendChild(button);
+            }
+
+            // Determine who starts
+            const whoStarts = whoStartsSelect.value;
+            if (whoStarts === 'random') {
+                isPlayerTurn = Math.random() < 0.5;
+            } else {
+                isPlayerTurn = whoStarts === 'player';
+            }
+
+            // Switch screens
+            setupScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            // Reset game state
+            selectedCount = 0;
             gameActive = true;
+            animationInProgress = false;
 
-            const gameContainer = document.getElementById('game');
-            const playerDiv = document.getElementById('player');
-            const playerNameDiv = document.getElementById('player-name');
+            // Clear history
+            gameHistoryContainer.innerHTML = '<h3>Game History</h3>';
 
-            document.getElementById('setup').style.display = 'none';
-            if (gameContainer) gameContainer.style.display = 'flex';
-            if (playerNameDiv) playerNameDiv.textContent = playerName;
+            // Render balls
+            renderBalls();
 
-            updateBallsLeft();
-            const message = document.getElementById('message');
-            if (message) message.textContent = `Your turn, ${playerName}!`;
-            createPlayerControls();
+            // Update status
+            updateGameStatus();
 
-            const robot = document.getElementById('robot');
-            if (robot) robot.classList.add('jumping');
-            console.log('Game started. Player:', playerName, ' Balls:', ballsLeft);
-        }
+            // Update character animations
+            updateCharacterAnimations();
 
-        function updateBallsLeft() {
-            const ballsLeftDiv = document.getElementById('balls-left');
-            if (ballsLeftDiv) ballsLeftDiv.textContent = `${ballsLeft} balls left`;
-        }
-
-        function createPlayerControls() {
-            const controls = document.getElementById('player-controls');
-            if (!controls) return;
-            controls.innerHTML = '';
-            for (let i = 1; i <= Math.min(maxPick, ballsLeft); i++) {
-                const btn = document.createElement('button');
-                btn.textContent = `Pick ${i}`;
-                btn.onclick = () => playerMove(i);
-                controls.appendChild(btn);
+            // If robot starts, make its move
+            if (!isPlayerTurn) {
+                setTimeout(makeRobotMove, 1000);
             }
         }
 
-        async function playerMove(num) {
-            if (!gameActive || num > ballsLeft) return;
+        // Reset game
+        function resetGame() {
+            gameScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
 
-            ballsLeft -= num;
-            const player = document.getElementById('player');
-            const basket = document.getElementById('basket');
-            const message = document.getElementById('message');
-            const controls = document.getElementById('player-controls');
+            // Stop character animations
+            robotCharacter.classList.remove('active-turn', 'taking-balls');
+            playerCharacter.classList.remove('active-turn', 'taking-balls');
 
-            if (player) player.classList.remove('jumping');
-            if (player) player.classList.add('player-jump');
-            if (basket) basket.classList.add('bounce');
-            if (message) message.textContent = `${playerName} picked ${num} balls!`;
-            updateBallsLeft();
-            if (controls) controls.innerHTML = '';
-
-            await wait(1000);
-            if (player) player.classList.remove('player-jump');
-            if (basket) basket.classList.remove('bounce');
-
-            if (!checkWin()) {
-                await robotMove();
-            }
+            // Reset selection
+            takeBallsButton.disabled = true;
+            selectedCount = 0;
+            gameActive = false;
         }
 
-        async function robotMove() {
+        // Render balls
+        function renderBalls() {
+            ballsContainer.innerHTML = '';
+
+            // Only create ball elements if there are balls remaining
+            for (let i = 0; i < remainingBalls; i++) {
+                const ball = document.createElement('div');
+                ball.classList.add('ball');
+                // Random depth for 3D effect
+                ball.style.setProperty('--depth', Math.floor(Math.random() * 10));
+                ballsContainer.appendChild(ball);
+            }
+
+            // Update the counter text
+            ballsCount.textContent = `Balls remaining: ${remainingBalls}`;
+        }
+
+        // Update game status
+        function updateGameStatus() {
+            gameStatus.classList.remove('player-turn', 'robot-turn');
+
             if (!gameActive) return;
 
-            const robot = document.getElementById('robot');
-            const player = document.getElementById('player');
-            const basket = document.getElementById('basket');
-            const message = document.getElementById('message');
-
-            if (robot) robot.classList.remove('jumping');
-            if (player) player.classList.add('jumping');
-            const remainder = ballsLeft % cycle;
-            const robotPick = remainder === 0 ? 1 : remainder;
-            ballsLeft -= robotPick;
-
-            if (robot) robot.classList.add('robot-jump');
-            if (basket) basket.classList.add('bounce');
-            if (message) message.textContent = `Robot picked ${robotPick} balls!`;
-            updateBallsLeft();
-
-            await wait(1000);
-            if (robot) robot.classList.remove('robot-jump');
-            if (basket) basket.classList.remove('bounce');
-
-            if (!checkWin()) {
-                if (message) message.textContent = `Your turn, ${playerName}!`;
-                createPlayerControls();
-            }
-        }
-
-        function checkWin() {
-            if (ballsLeft <= 0) {
+            if (remainingBalls === 0) {
+                const winner = isPlayerTurn ? playerName : 'AI Robo';
+                gameStatus.innerHTML = `<div class="winner">${winner} wins the game!</div>`;
                 gameActive = false;
-                const message = document.getElementById('message');
-                const controls = document.getElementById('player-controls');
-                const player = document.getElementById('player');
-                const robot = document.getElementById('robot');
 
-                const winner = ballsLeft === 0 ? playerName : 'Robot';
-                if (message) message.textContent = `${winner} wins!`;
-                if (controls) controls.innerHTML = '';
-                if (player) player.classList.remove('jumping');
-                if (robot) robot.classList.remove('jumping');
-                return true;
+                // Fire confetti celebration
+                fireWinConfetti(winner === playerName);
+
+                // Stop character animations
+                robotCharacter.classList.remove('active-turn');
+                playerCharacter.classList.remove('active-turn');
+                return;
             }
-            return false;
+
+            if (isPlayerTurn) {
+                gameStatus.textContent = `${playerName}'s turn. Select & Pick from 1 to ${Math.min(maxBallsPerTurn, remainingBalls)} balls.`;
+                gameStatus.classList.add('player-turn');
+
+                // Enable/disable buttons based on remaining balls
+                const ballSelectButtons = document.querySelectorAll('.ball-select');
+                ballSelectButtons.forEach(button => {
+                    const count = parseInt(button.dataset.count);
+                    button.disabled = count > remainingBalls;
+                });
+            } else {
+                gameStatus.textContent = `AI Robo is thinking...`;
+                gameStatus.classList.add('robot-turn');
+            }
         }
 
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        // Add this new function for the confetti animation
+        function fireWinConfetti(isPlayerWin) {
+            // Create a canvas element for the confetti
+            const canvas = document.createElement('canvas');
+            canvas.id = 'confetti-canvas';
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '1000';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Confetti particle settings
+            const particles = [];
+            const particleCount = 200;
+            const gravity = 0.5;
+            const colors = isPlayerWin ?
+                ['#ff9770', '#ffafcc', '#ffd6e0', '#ff758f', '#9e2a2b'] :
+                ['#0077b6', '#90e0ef', '#caf0f8', '#00b4d8', '#023e8a'];
+
+            // Create particles
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    radius: Math.random() * 5 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    velocity: {
+                        x: Math.random() * 6 - 3,
+                        y: Math.random() * 5 + 3
+                    },
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+
+            // Animation function
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let stillActive = false;
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+
+                    // Draw a confetti particle (rectangle)
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.radius, -p.radius, p.radius * 2, p.radius);
+
+                    ctx.restore();
+
+                    // Update position
+                    p.x += p.velocity.x;
+                    p.y += p.velocity.y;
+
+                    // Add gravity
+                    p.velocity.y += gravity;
+
+                    // Update rotation
+                    p.rotation += p.rotationSpeed;
+
+                    // Reset if particle goes out of screen
+                    if (p.y > canvas.height + p.radius) {
+                        particles[i].y = -p.radius;
+                        particles[i].velocity.y = Math.random() * 5 + 3;
+                        stillActive = true;
+                    } else {
+                        stillActive = true;
+                    }
+
+                    // Bounce off the sides
+                    if (p.x < 0 || p.x > canvas.width) {
+                        p.velocity.x *= -0.8;
+                    }
+                }
+
+                // Continue animation or clean up
+                if (stillActive && canvas.parentNode) {
+                    requestAnimationFrame(animate);
+                } else {
+                    if (canvas.parentNode) {
+                        document.body.removeChild(canvas);
+                    }
+                }
+            }
+
+            // Start animation
+            animate();
+
+            // Clean up after 6 seconds
+            setTimeout(() => {
+                if (canvas.parentNode) {
+                    document.body.removeChild(canvas);
+                }
+            }, 6000);
         }
 
-        // Define keyframes dynamically to avoid missing CSS errors
-        const styleSheet = document.styleSheets[0];
-        styleSheet.insertRule(`
-            @keyframes jump {
-                0% { transform: translateY(0); }
-                50% { transform: translateY(-50px); }
-                100% { transform: translateY(0); }
+        // Update character animations
+        function updateCharacterAnimations() {
+            robotCharacter.classList.remove('active-turn');
+            playerCharacter.classList.remove('active-turn');
+
+            if (!gameActive) return;
+
+            if (isPlayerTurn) {
+                playerCharacter.classList.add('active-turn');
+            } else {
+                robotCharacter.classList.add('active-turn');
             }
-        `, styleSheet.cssRules.length);
-        styleSheet.insertRule(`
-            @keyframes jumpToBasket {
-                0% { transform: translateX(0); }
-                25% { transform: translateX(-100px) translateY(-50px); }
-                75% { transform: translateX(-100px) translateY(-50px); }
-                100% { transform: translateX(0); }
+        }
+
+        // Select ball count
+        function selectBallCount(count) {
+            if (!isPlayerTurn || !gameActive || animationInProgress) return;
+
+            selectedCount = count;
+
+            // Update UI
+            const ballSelectButtons = document.querySelectorAll('.ball-select');
+            ballSelectButtons.forEach(button => {
+                button.classList.remove('selected');
+                if (parseInt(button.dataset.count) === count) {
+                    button.classList.add('selected');
+                }
+            });
+
+            takeBallsButton.disabled = false;
+        }
+
+        // Handle player move
+        function handlePlayerMove() {
+            if (!isPlayerTurn || !gameActive || selectedCount < 1 || animationInProgress) return;
+
+            animationInProgress = true;
+
+            // Player animation
+            playerCharacter.classList.remove('active-turn');
+            playerCharacter.classList.add('taking-balls');
+
+            // Store the selected count before changing remainingBalls
+            const ballsToTake = selectedCount;
+
+            // Take balls from the total
+            remainingBalls -= ballsToTake;
+
+            // Create flying balls effect
+            createFlyingBallsAnimation(ballsToTake, 'player', () => {
+                // Add to history
+                addToHistory(`${playerName} took ${ballsToTake} ball${ballsToTake > 1 ? 's' : ''}.`);
+
+                // Render balls to update the display
+                renderBalls();
+
+                // Check if game is over
+                if (remainingBalls === 0) {
+                    updateGameStatus();
+                    animationInProgress = false;
+                    playerCharacter.classList.remove('taking-balls');
+                    return;
+                }
+
+                // Switch turn
+                isPlayerTurn = false;
+
+                // Reset selection
+                const ballSelectButtons = document.querySelectorAll('.ball-select');
+                ballSelectButtons.forEach(button => {
+                    button.classList.remove('selected');
+                });
+                takeBallsButton.disabled = true;
+                selectedCount = 0;
+
+                // Update UI
+                updateGameStatus();
+                updateCharacterAnimations();
+
+                // Animation completed
+                animationInProgress = false;
+                playerCharacter.classList.remove('taking-balls');
+
+                // Make robot move after a short delay
+                setTimeout(makeRobotMove, 1000);
+            });
+        }
+
+        // Make robot move - fixed strategy for any maxBallsPerTurn
+        // Make robot move - with fixes
+        function makeRobotMove() {
+            if (isPlayerTurn || !gameActive || animationInProgress) return;
+
+            animationInProgress = true;
+
+            let count;
+
+            // [... existing AI strategy logic ...]
+
+            // Calculate the optimal move based on the Win or Die game winning strategy
+            if (difficulty === 'hard') {
+                const targetRemainder = remainingBalls % (maxBallsPerTurn + 1);
+
+                if (targetRemainder === 0) {
+                    count = 1;
+                } else {
+                    count = targetRemainder;
+                }
+            } else if (difficulty === 'medium') {
+                if (Math.random() < 0.7) {
+                    const targetRemainder = remainingBalls % (maxBallsPerTurn + 1);
+
+                    if (targetRemainder === 0) {
+                        count = 1;
+                    } else {
+                        count = targetRemainder;
+                    }
+                } else {
+                    if (Math.random() < 0.6) {
+                        count = 1;
+                    } else {
+                        count = Math.min(Math.floor(Math.random() * maxBallsPerTurn) + 1, remainingBalls);
+                    }
+                }
+            } else {
+                if (Math.random() < 0.3) {
+                    const targetRemainder = remainingBalls % (maxBallsPerTurn + 1);
+
+                    if (targetRemainder === 0) {
+                        count = 1;
+                    } else {
+                        count = targetRemainder;
+                    }
+                } else {
+                    if (Math.random() < 0.7) {
+                        count = 1;
+                    } else {
+                        count = Math.min(Math.floor(Math.random() * maxBallsPerTurn) + 1, remainingBalls);
+                    }
+                }
             }
-        `, styleSheet.cssRules.length);
-        styleSheet.insertRule(`
-            @keyframes robotJumpToBasket {
-                0% { transform: translateX(0); }
-                25% { transform: translateX(100px) translateY(-50px); }
-                75% { transform: translateX(100px) translateY(-50px); }
-                100% { transform: translateX(0); }
+
+            // Special case: if remainingBalls <= maxBallsPerTurn, take all to win
+            if (remainingBalls <= maxBallsPerTurn) {
+                const shouldTakeAll =
+                    difficulty === 'hard' ||
+                    (difficulty === 'medium' && Math.random() < 0.9) ||
+                    (difficulty === 'easy' && Math.random() < 0.5);
+
+                if (shouldTakeAll) {
+                    count = remainingBalls;
+                }
             }
-        `, styleSheet.cssRules.length);
-        styleSheet.insertRule(`
-            @keyframes bounce {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
+
+            // Ensure we don't take more than available or allowed
+            count = Math.min(count, maxBallsPerTurn, remainingBalls);
+
+            // Safety check - ensure we take at least 1 ball
+            if (count < 1) {
+                count = 1;
             }
-        `, styleSheet.cssRules.length);
-    </script>
+
+            // Store the count before changing remainingBalls
+            const ballsToTake = count;
+
+            // Take balls from the total
+            remainingBalls -= ballsToTake;
+
+            // Robot animation
+            robotCharacter.classList.remove('active-turn');
+            robotCharacter.classList.add('taking-balls');
+
+            // Create flying balls effect
+            createFlyingBallsAnimation(ballsToTake, 'robot', () => {
+                // Add to history
+                addToHistory(`AI Robo took ${ballsToTake} ball${ballsToTake > 1 ? 's' : ''}.`);
+
+                // Render balls to update the display
+                renderBalls();
+
+                // Check if game is over
+                if (remainingBalls === 0) {
+                    updateGameStatus();
+                    animationInProgress = false;
+                    robotCharacter.classList.remove('taking-balls');
+                    return;
+                }
+
+                // Switch turn
+                isPlayerTurn = true;
+
+                // Update UI
+                updateGameStatus();
+                updateCharacterAnimations();
+
+                // Animation completed
+                animationInProgress = false;
+                robotCharacter.classList.remove('taking-balls');
+            });
+        }
+
+        // Create flying balls animation
+        function createFlyingBallsAnimation(count, character, callback) {
+            let completedAnimations = 0;
+            const basketRect = document.querySelector('.basket').getBoundingClientRect();
+            const characterRect = document.getElementById(`${character}-character`).getBoundingClientRect();
+            const gameWorldRect = document.querySelector('.game-world').getBoundingClientRect();
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const ball = document.createElement('div');
+                    ball.classList.add('flying-ball');
+
+                    // Position ball at center of basket initially
+                    const startX = basketRect.left + basketRect.width / 2 - gameWorldRect.left;
+                    const startY = basketRect.top + basketRect.height / 2 - gameWorldRect.top;
+
+                    ball.style.left = `${startX}px`;
+                    ball.style.top = `${startY}px`;
+
+                    document.querySelector('.game-world').appendChild(ball);
+
+                    // Move ball to character
+                    setTimeout(() => {
+                        // End position (near character)
+                        const endX = characterRect.left + characterRect.width / 2 - gameWorldRect.left;
+                        const endY = characterRect.top + characterRect.height / 3 - gameWorldRect.top;
+
+                        ball.style.left = `${endX}px`;
+                        ball.style.top = `${endY}px`;
+                        ball.style.transform = 'scale(0.5)';
+
+                        // Remove ball after animation
+                        setTimeout(() => {
+                            ball.remove();
+                            completedAnimations++;
+
+                            if (completedAnimations === count) {
+                                callback();
+                            }
+                        }, 1000);
+                    }, 100);
+                }, i * 300); // Stagger the animations
+            }
+        }
+
+        function addToHistory(text) {
+            const entry = document.createElement('p');
+            entry.textContent = text;
+            gameHistoryContainer.appendChild(entry);
+            gameHistoryContainer.scrollTop = gameHistoryContainer.scrollHeight;
+        }
+    });
+</script>
 </body>
 </html>
